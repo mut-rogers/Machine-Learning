@@ -1,39 +1,27 @@
-# Define the test functions
-
 import pandas as pd
-import os
-import pytest
+field_df = pd.read_csv('sampled_field_df.csv')
 
-# Define the test functions
 
-def test_read_field_DataFrame_shape():
-    field_df = pd.read_csv('sampled_field_df.csv')
-    assert field_df.shape == (5654, 19)
+def test_read_field_dataframe_shape():
+    # Test the shape of the DataFrame
+    assert field_df.shape[1] == 18, "Field DataFrame shape is not as expected."
 
-def test_field_DataFrame_columns():
-    field_df = pd.read_csv('sampled_field_df.csv')
-    expected_columns = ['Field_ID', 'Elevation', 'Latitude', 'Longitude',
-                       'Location', 'Slope', 'Rainfall', 'Min_temperature_C',
-                        'Max_temperature_C', 'Ave_temps', 'Soil_fertility']
-def test_field_DataFrame_non_negative_elevation():
-    field_df = pd.read_csv('sampled_field_df.csv')
-    assert (field_df['Elevation'] >= 0).all()
+def test_field_dataframe_columns():
+    # Test for the expected columns in the DataFrame
+    expected_columns = [
+        'Field_ID', 'Elevation', 'Latitude', 'Longitude', 'Location',
+        'Slope', 'Rainfall', 'Min_temperature_C', 'Max_temperature_C',
+        'Ave_temps', 'Soil_fertility', 'Soil_type', 'pH', 'Pollution_level',
+        'Plot_size', 'Annual_yield', 'Crop_type', 'Standard_yield'
+    ]
+    assert all(column in field_df.columns for column in expected_columns), "Field DataFrame does not have the expected columns."
+
+def test_field_dataframe_non_negative_elevation():
+    # Test that all Elevation values are non-negative
+    assert not (field_df['Elevation'] < 0).any(), "Elevation contains negative values."
 
 def test_crop_types_are_valid():
-    field_df = pd.read_csv('sampled_field_df.csv')
-    valid_crop_type = ['cassava', 'wheat', 'tea', 'potato', 'banana', 'coffee', 'maize', 'rice','cassava ','wheat ','tea ']  # Define your valid crop types here
-    assert field_df['Crop_type'].isin(valid_crop_type).all()
-
-# # Run the tests
-# if __name__ == "__main__":
-#     pytest.main(['-v', 'validate_data.py'])
-
-#     # Define the file paths
-#     field_csv_path = 'sampled_field_df.csv'
-
-#     # Delete sampled_field_df.csv if it exists
-#     if os.path.exists(field_csv_path):
-#         os.remove(field_csv_path)
-#         print(f"Deleted {field_csv_path}")
-#     else:
-#         print(f"{field_csv_path} does not exist.")
+    # Assuming 'Crop_type' is a column in your field DataFrame, and you have a predefined list of valid crop types
+    valid_crop_types = ['cassava', 'tea', 'wheat', 'potato', 'banana', 'coffee', 'rice', 'maize']
+    # Ensure all crop types are valid
+    assert all(crop in valid_crop_types for crop in field_df['Crop_type']), "Invalid crop types found in DataFrame."

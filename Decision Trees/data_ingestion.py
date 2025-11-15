@@ -1,36 +1,33 @@
-""" 
-data_ingestion.py 
-
-This module provides utility functions for performing data extraction for different sources, in this case, 
-data sources include SQL DataBase and Web-based CSV files. 
-
-This module includes functions for interacting with the database (Creating DB Engine, Connecting to the DB Engine, and Querying DB) 
-
-The aim of the module is to provide simple and reusable blocks of code for common operations of connecting and/or retrieving data from the database and 
-Web-based CSV from our company sources.
+"""
+This module provides utilities for database interactions and data loading from web resources.
+It includes functions to create a database engine, execute SQL queries, and read CSV files from the web.
 """
 
+import pandas as pd
 from sqlalchemy import create_engine, text
 import logging
-import pandas as pd
-# Name our logger so we know that logs from this module come from the data_ingestion module
+
+# Set up basic logging configuration
 logger = logging.getLogger('data_ingestion')
-# Set a basic logging message up that prints out a timestamp, the name of our logger, and the message
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
-### START FUNCTION
-
 def create_db_engine(db_path):
-    """ 
-    This is a utility function that creates a connection to our database 
+    """
+    Creates a database engine connection using SQLAlchemy.
 
-    Args:
-        db_path (str): This is a string containing path to our SQLite database file. 
+    Parameters:
+    - db_path (str): A database URL that indicates database dialect and connection arguments.
 
     Returns:
-        Database_Connection (instance): A database connection object
-    """
+    - engine (Engine): An SQLAlchemy engine instance connected to the specified database.
 
+    Raises:
+    - ImportError: If the SQLAlchemy package is not installed.
+    - Exception: For other issues that prevent database engine creation, including invalid db_path.
+
+    Example:
+    >>> engine = create_db_engine('sqlite:///my_database.db')
+    """
     try:
         engine = create_engine(db_path)
         # Test connection
@@ -45,17 +42,24 @@ def create_db_engine(db_path):
     except Exception as e:# If we fail to create an engine inform the user
         logger.error(f"Failed to create database engine. Error: {e}")
         raise e
-    
-def query_data(engine, sql_query):
-    """ 
-    A utility function to query data from the database 
 
-    Args:
-        engine (instance): A DataBase engine instance with connection to the database
-        sql_query (str): SQL Statement to be parsed to the DataBase for data extraction 
+def query_data(engine, sql_query):
+    """
+    Executes a SQL query and returns the results as a pandas DataFrame.
+
+    Parameters:
+    - engine (Engine): The SQLAlchemy engine to use for the query.
+    - sql_query (str): The SQL query to execute.
 
     Returns:
-        df (DataFrame): A dataframe with the extracted data
+    - DataFrame: A pandas DataFrame containing the results of the SQL query.
+
+    Raises:
+    - ValueError: If the SQL query fails (e.g., table not found).
+    - Exception: For other issues, including problems with the connection.
+
+    Example:
+    >>> df = query_data(engine, "SELECT * FROM my_table")
     """
     try:
         with engine.connect() as connection:
@@ -73,16 +77,25 @@ def query_data(engine, sql_query):
     except Exception as e:
         logger.error(f"An error occurred while querying the database. Error: {e}")
         raise e
-    
-def read_from_web_CSV(URL):
-    """ 
-    A utility function to extract data from a Web-Based CSV file 
 
-    Args:
-        URL (str): A URL pointing to the CSV Web resource 
+
+def read_from_web_CSV(URL):
+    """
+    Reads a CSV file from a web URL into a pandas DataFrame.
+
+    Parameters:
+    - URL (str): The web URL to the CSV file.
 
     Returns:
-        df (DataFrame): A dataframe with the extracted data
+    - DataFrame: A pandas DataFrame containing the data from the CSV file.
+
+    Raises:
+    - URLError: If the URL is unreachable or the host cannot be connected.
+    - ValueError: If the URL does not point to a valid CSV file.
+    - Exception: For other issues, including network problems.
+
+    Example:
+    >>> df = read_from_web_CSV("http://example.com/my_data.csv")
     """
     try:
         df = pd.read_csv(URL)
@@ -94,5 +107,3 @@ def read_from_web_CSV(URL):
     except Exception as e:
         logger.error(f"Failed to read CSV from the web. Error: {e}")
         raise e
-    
-### END FUNCTION
